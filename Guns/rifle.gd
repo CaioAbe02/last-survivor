@@ -3,6 +3,7 @@ extends Node2D
 @export var _firerate: float = 0.1
 @export var _magazine_capacity: int = 30
 @export var _reload_timer: float = 1.0
+@export var _damage: int = 25
 
 const BULLET = preload("res://bullet.tscn")
 
@@ -42,6 +43,7 @@ func fire() -> void:
 		bullet_count -= 1
 		var bullet_node = BULLET.instantiate()
 		var bullet_direction = rifleRotation()
+		bullet_node._damage = _damage
 		bullet_node.global_position = $Marker2D.global_position
 		bullet_node.setDirection(bullet_direction)
 		bullet_node._speed = 1000.0
