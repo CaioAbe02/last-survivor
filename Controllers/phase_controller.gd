@@ -1,5 +1,7 @@
 extends Node2D
 
+var aim_cursor = preload("res://Cursor/aim_cursor.png")
+
 @onready var player_healthbar = $CanvasLayer/PlayerHealthbar
 @onready var player_health_label = $CanvasLayer/LifeContainer/LifeLabel
 @onready var player = $Player
@@ -9,7 +11,8 @@ extends Node2D
 
 func _ready() -> void:
 	player_healthbar.init_health(player._life)
-
+	Input.set_custom_mouse_cursor(aim_cursor, Input.CURSOR_ARROW, Vector2(12, 12))
+	
 func _on_player_player_took_damage() -> void:
 	player_healthbar.health = player._life
 	player_health_label.text = str(player._life)
