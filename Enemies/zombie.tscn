@@ -1,0 +1,160 @@
+[gd_scene load_steps=20 format=3 uid="uid://0r78fbhi45o3"]
+
+[ext_resource type="Script" path="res://Enemies/zombie.gd" id="1_2b6r8"]
+[ext_resource type="Texture2D" uid="uid://boaeypfow4whr" path="res://Enemies/Zombie1_walking.png" id="2_5fd3p"]
+[ext_resource type="Shader" uid="uid://b4wa303tmtx0d" path="res://Shaders/hit_flash.tres" id="2_rok2f"]
+[ext_resource type="Texture2D" uid="uid://q6m7770lh2q3" path="res://Enemies/Zombie2_walking.png" id="3_8sjru"]
+[ext_resource type="Texture2D" uid="uid://cbfynxiu5gmou" path="res://Enemies/Zombie3_walking.png" id="4_xsxmw"]
+[ext_resource type="PackedScene" uid="uid://be4vtaclb4rse" path="res://Particles/blood_particles.tscn" id="6_wsmbj"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mor72"]
+resource_local_to_scene = true
+shader = ExtResource("2_rok2f")
+shader_parameter/enabled = false
+shader_parameter/tint = Color(1, 1, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bny31"]
+atlas = ExtResource("2_5fd3p")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iw7kt"]
+atlas = ExtResource("2_5fd3p")
+region = Rect2(16, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2c2of"]
+atlas = ExtResource("3_8sjru")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dyuaa"]
+atlas = ExtResource("3_8sjru")
+region = Rect2(16, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ty4nm"]
+atlas = ExtResource("4_xsxmw")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hu1r1"]
+atlas = ExtResource("4_xsxmw")
+region = Rect2(16, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_mvxr7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bny31")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iw7kt")
+}],
+"loop": true,
+"name": &"normal_walking",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.25,
+"texture": SubResource("AtlasTexture_2c2of")
+}, {
+"duration": 1.25,
+"texture": SubResource("AtlasTexture_dyuaa")
+}],
+"loop": true,
+"name": &"runner_walking",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_ty4nm")
+}, {
+"duration": 1.5,
+"texture": SubResource("AtlasTexture_hu1r1")
+}],
+"loop": true,
+"name": &"strong_walking",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3pf4p"]
+size = Vector2(14, 19)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_yhcuf"]
+size = Vector2(14, 19)
+
+[sub_resource type="Animation" id="Animation_jae3a"]
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:material:shader_parameter/enabled")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_g4snf"]
+resource_name = "hit_flash"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:material:shader_parameter/enabled")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_bcs5n"]
+_data = {
+"RESET": SubResource("Animation_jae3a"),
+"hit_flash": SubResource("Animation_g4snf")
+}
+
+[node name="NormalZombie" type="CharacterBody2D" groups=["enemy"]]
+z_index = 1
+y_sort_enabled = true
+scale = Vector2(3, 3)
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("1_2b6r8")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+material = SubResource("ShaderMaterial_mor72")
+sprite_frames = SubResource("SpriteFrames_mvxr7")
+animation = &"normal_walking"
+offset = Vector2(0, -15)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1, -9.5)
+shape = SubResource("RectangleShape2D_3pf4p")
+
+[node name="Hitbox" type="Area2D" parent="."]
+visible = false
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(1, -9.5)
+shape = SubResource("RectangleShape2D_yhcuf")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+avoidance_enabled = true
+radius = 40.0
+max_speed = 200.0
+
+[node name="HitFlashAnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_bcs5n")
+}
+
+[node name="BloodParticles" parent="." instance=ExtResource("6_wsmbj")]
+position = Vector2(0.666667, -8)
+
+[connection signal="body_entered" from="Hitbox" to="." method="_on_hitbox_body_entered"]
+[connection signal="velocity_computed" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_velocity_computed"]

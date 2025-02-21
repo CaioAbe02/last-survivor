@@ -1,0 +1,157 @@
+[gd_scene load_steps=17 format=3 uid="uid://bo3clkq2jo5fl"]
+
+[ext_resource type="Script" path="res://Enemies/fat_zombie.gd" id="1_aau7e"]
+[ext_resource type="Shader" uid="uid://b4wa303tmtx0d" path="res://Shaders/hit_flash.tres" id="2_106bs"]
+[ext_resource type="PackedScene" uid="uid://be4vtaclb4rse" path="res://Particles/blood_particles.tscn" id="2_llokh"]
+[ext_resource type="Texture2D" uid="uid://dcehlnh6gmtrm" path="res://Enemies/FatZombie_walking.png" id="3_xeg8i"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y42qw"]
+resource_local_to_scene = true
+shader = ExtResource("2_106bs")
+shader_parameter/enabled = false
+shader_parameter/tint = Color(1, 1, 1, 1)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_clafw"]
+atlas = ExtResource("3_xeg8i")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kl0dk"]
+atlas = ExtResource("3_xeg8i")
+region = Rect2(16, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sjprp"]
+atlas = ExtResource("3_xeg8i")
+region = Rect2(0, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l6ysi"]
+atlas = ExtResource("3_xeg8i")
+region = Rect2(16, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_s308m"]
+animations = [{
+"frames": [{
+"duration": 0.75,
+"texture": SubResource("AtlasTexture_clafw")
+}, {
+"duration": 0.75,
+"texture": SubResource("AtlasTexture_kl0dk")
+}],
+"loop": true,
+"name": &"running",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.75,
+"texture": SubResource("AtlasTexture_sjprp")
+}, {
+"duration": 1.75,
+"texture": SubResource("AtlasTexture_l6ysi")
+}],
+"loop": true,
+"name": &"walking",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y4ujy"]
+size = Vector2(16, 26)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_w53wn"]
+size = Vector2(16, 26)
+
+[sub_resource type="Animation" id="Animation_71epw"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:material:shader_parameter/enabled")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="Animation" id="Animation_h2e78"]
+resource_name = "hit_flash"
+length = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:material:shader_parameter/enabled")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ikf6n"]
+_data = {
+"RESET": SubResource("Animation_71epw"),
+"hit_flash": SubResource("Animation_h2e78")
+}
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1bth2"]
+radius = 42.6019
+
+[node name="FatZombie" type="CharacterBody2D" groups=["enemy"]]
+z_index = 1
+y_sort_enabled = true
+texture_filter = 1
+scale = Vector2(5, 5)
+collision_layer = 2
+collision_mask = 4
+script = ExtResource("1_aau7e")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_y42qw")
+sprite_frames = SubResource("SpriteFrames_s308m")
+animation = &"running"
+autoplay = "walking"
+offset = Vector2(0, -15)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-2.86102e-07, -14)
+shape = SubResource("RectangleShape2D_y4ujy")
+
+[node name="Hitbox" type="Area2D" parent="."]
+visible = false
+metadata/_edit_lock_ = true
+metadata/_edit_group_ = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(0, -14)
+shape = SubResource("RectangleShape2D_w53wn")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+simplify_path = true
+max_speed = 300.0
+
+[node name="HitFlashAnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_ikf6n")
+}
+
+[node name="BloodParticles" parent="." instance=ExtResource("2_llokh")]
+position = Vector2(0, -10.8)
+
+[node name="PlayerDetection" type="Area2D" parent="."]
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDetection"]
+position = Vector2(0, -14)
+shape = SubResource("CircleShape2D_1bth2")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+position = Vector2(-1.78814e-07, -14)
+scale = Vector2(0.8, 1.3)
+rect = Rect2(-15, -15, 30, 30)
+
+[connection signal="body_entered" from="Hitbox" to="." method="_on_hitbox_body_entered"]
+[connection signal="velocity_computed" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_velocity_computed"]
+[connection signal="body_entered" from="PlayerDetection" to="." method="_on_player_detection_body_entered"]
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_visible_on_screen_notifier_2d_screen_exited"]
